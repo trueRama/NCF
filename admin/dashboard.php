@@ -4,6 +4,8 @@ require_once '../includes/config.php';
 
 // Check if logged in
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    error_log("Session check failed - admin_logged_in: " . (isset($_SESSION['admin_logged_in']) ? $_SESSION['admin_logged_in'] : 'not set'));
+    error_log("Full session data: " . print_r($_SESSION, true));
     header('Location: index.php');
     exit;
 }

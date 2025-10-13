@@ -1,5 +1,15 @@
 <?php
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Start output buffering to prevent header issues
+ob_start();
+
 session_start();
+
+// Include config to ensure database connection is available
+require_once '../includes/config.php';
 
 // Check if already logged in
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
@@ -8,16 +18,28 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
 }
 
 // Handle login
-if ($_POST) {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    
+    // Debug information
+    error_log("Login attempt - Username: '$username', Password: '$password'");
     
     if ($username === 'admin' && $password === 'admin') {
+        // Set session variables
         $_SESSION['admin_logged_in'] = true;
+        $_SESSION['admin_username'] = $username;
+        $_SESSION['login_time'] = time();
+        
+        error_log("Login successful for user: $username");
+        
+        // Ensure no output before header
+        ob_clean();
         header('Location: dashboard.php');
-        exit;
+        exit();
     } else {
-        $error = 'Invalid credentials!';
+        $error = 'Invalid credentials! Please use username: admin and password: admin';
+        error_log("Login failed - Username: '$username', Password: '$password'");
     }
 }
 ?>
@@ -146,10 +168,10 @@ if ($_POST) {
                 <div class="alert alert-error"><?php echo $error; ?></div>
             <?php endif; ?>
             
-            <form method="POST">
+            <form method="POST" action="">
                 <div class="form-group">
                     <label for="username">👤 Username:</label>
-                    <input type="text" id="username" name="username" required placeholder="Enter your username">
+                    <input type="text" id="username" name="username" required placeholder="Enter your username" value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
                 </div>
                 
                 <div class="form-group">
@@ -157,10 +179,15 @@ if ($_POST) {
                     <input type="password" id="password" name="password" required placeholder="Enter your password">
                 </div>
                 
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <button type="submit" name="login_submit" class="btn btn-primary" style="width: 100%;">
                     🚀 Login to Dashboard
                 </button>
             </form>
+            
+            
+            <div style="margin-top: 1rem; text-align: center; font-size: 0.9rem; color: var(--text-light);">
+                <p>🔧 Having trouble logging in? Try our <a href="session_test.php" style="color: var(--primary-gold);">session test</a> page</p>
+            </div>
             
             <div class="back-link">
                 <a href="../">← Back to Home</a>
