@@ -97,6 +97,41 @@ jobs:
         
         echo "Required directories and security files created"
 
+    - name: 🔍 Debug FTP Configuration
+      run: |
+        echo "🔍 FTP Configuration Debug:"
+        echo "Server: ${{ secrets.FTP_SERVER }}"
+        echo "Username: ${{ secrets.FTP_USERNAME }}"
+        echo "Protocol: ${{ secrets.FTP_PROTOCOL || 'ftp' }}"
+        echo "Port: ${{ secrets.FTP_PORT || 21 }}"
+        echo "Target Directory: public_html/ncf/"
+        echo "Local Directory Contents:"
+        ls -la ./deploy/
+        echo "Files to upload:"
+        find ./deploy -type f | head -20
+        echo "Total files in deploy directory:"
+        find ./deploy -type f | wc -l
+
+    - name: 🔌 Test FTP Connection
+      run: |
+        echo "Testing FTP connection to ${{ secrets.FTP_SERVER }}"
+        # Install lftp for connection testing
+        sudo apt-get update
+        sudo apt-get install -y lftp
+        
+        # Test FTP connection
+        lftp -c "
+          set ftp:ssl-allow no;
+          set ssl:verify-certificate no;
+          open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_SERVER }};
+          pwd;
+          ls -la;
+          cd public_html || echo 'public_html directory not found';
+          pwd;
+          ls -la;
+          quit;
+        " || echo "FTP connection test failed"
+
     - name: 🌐 Deploy via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
@@ -107,6 +142,8 @@ jobs:
         port: ${{ secrets.FTP_PORT || 21 }}
         local-dir: ./deploy/
         server-dir: public_html/ncf/
+        log-level: verbose
+        dry-run: false
         exclude: |
           **/.git*
           **/.git*/**
@@ -128,7 +165,44 @@ jobs:
         echo "   📅 Deployed at: $(date)"
         echo "   🔗 Commit: ${{ github.sha }}"
         
-    - name: 📧 Notify Deployment Status
+        echo "🔍 Verifying deployment on server..."
+        # Check if files were actually uploaded
+        lftp -c "
+          set ftp:ssl-allow no;
+          set ssl:verify-certificate no;
+          open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_SERVER }};
+          cd public_html/ncf || echo 'NCF directory not found!';
+          echo 'Files in NCF directory:';
+          ls -la;
+          quit;
+        " || echo "Post-deployment verification failed"
+        
+    - name: � Alternative FTP Upload (if main deployment failed)
+      if: failure()
+      run: |
+        echo "🔄 Attempting alternative FTP upload method..."
+        
+        # Create FTP script
+        cat > ftp_script.txt << EOF
+        open ${{ secrets.FTP_SERVER }}
+        user ${{ secrets.FTP_USERNAME }} ${{ secrets.FTP_PASSWORD }}
+        binary
+        cd public_html
+        mkdir ncf
+        cd ncf
+        mput deploy/*
+        mput deploy/admin/*
+        mput deploy/assets/css/*
+        mput deploy/assets/images/*
+        mput deploy/client/*
+        mput deploy/includes/*
+        quit
+        EOF
+        
+        # Execute FTP script
+        ftp -n < ftp_script.txt || echo "Alternative FTP upload also failed"
+
+    - name: �📧 Notify Deployment Status
       if: always()
       run: |
         if [ "${{ job.status }}" == "success" ]; then
@@ -140,6 +214,11 @@ jobs:
         else
           echo "❌ Deployment failed!"
           echo "Please check the logs for details"
+          echo "Common issues:"
+          echo "1. Check GitHub Secrets are properly configured"
+          echo "2. Verify FTP server credentials and permissions"
+          echo "3. Ensure target directory exists on server"
+          echo "4. Check if server accepts FTP connections"
         fi
 
   post-deploy:
