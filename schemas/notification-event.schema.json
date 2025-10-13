@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ncf.example.com/schemas/notification-event.schema.json",
+  "title": "Notification Event Schema",
+  "description": "Schema for notification events in NCF",
+  "allOf": [
+    {
+      "$ref": "base-event.schema.json"
+    },
+    {
+      "properties": {
+        "eventType": {
+          "enum": ["notification.created", "notification.sent", "notification.failed", "notification.read"]
+        },
+        "payload": {
+          "type": "object",
+          "required": ["notificationId", "recipientId", "channel", "message"],
+          "properties": {
+            "notificationId": {
+              "type": "string",
+              "description": "Unique identifier for the notification"
+            },
+            "recipientId": {
+              "type": "string",
+              "description": "ID of the notification recipient"
+            },
+            "channel": {
+              "type": "string",
+              "enum": ["email", "sms", "push", "in-app"],
+              "description": "Communication channel used"
+            },
+            "message": {
+              "type": "object",
+              "properties": {
+                "subject": {
+                  "type": "string",
+                  "description": "Notification subject or title"
+                },
+                "body": {
+                  "type": "string",
+                  "description": "Notification message body"
+                },
+                "priority": {
+                  "type": "string",
+                  "enum": ["low", "normal", "high", "urgent"],
+                  "default": "normal"
+                }
+              }
+            },
+            "status": {
+              "type": "string",
+              "enum": ["pending", "sent", "delivered", "failed", "read"],
+              "description": "Current status of the notification"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

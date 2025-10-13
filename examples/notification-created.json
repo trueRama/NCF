@@ -1,0 +1,22 @@
+{
+  "eventType": "notification.created",
+  "version": "1.0.0",
+  "timestamp": "2025-10-13T07:44:55Z",
+  "eventId": "450e8400-e29b-41d4-a716-446655440001",
+  "payload": {
+    "notificationId": "notif-12345",
+    "recipientId": "user-67890",
+    "channel": "email",
+    "message": {
+      "subject": "Welcome to NCF",
+      "body": "Thank you for joining our notification system.",
+      "priority": "normal"
+    },
+    "status": "pending"
+  },
+  "metadata": {
+    "source": "notification-service",
+    "correlationId": "660e8400-e29b-41d4-a716-446655440000",
+    "userId": "admin-123"
+  }
+}
