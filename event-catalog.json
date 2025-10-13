@@ -1,0 +1,55 @@
+{
+  "eventCatalog": {
+    "version": "1.0.0",
+    "description": "NCF Event Catalog - Central registry of all event types",
+    "events": [
+      {
+        "type": "notification.created",
+        "domain": "notification",
+        "version": "1.0.0",
+        "schema": "schemas/notification-event.schema.json",
+        "description": "Triggered when a new notification is created",
+        "producers": ["notification-service"],
+        "consumers": ["analytics-service", "audit-service"],
+        "retentionDays": 90
+      },
+      {
+        "type": "notification.sent",
+        "domain": "notification",
+        "version": "1.0.0",
+        "schema": "schemas/notification-event.schema.json",
+        "description": "Triggered when a notification is successfully sent",
+        "producers": ["notification-service"],
+        "consumers": ["analytics-service", "audit-service", "reporting-service"],
+        "retentionDays": 90
+      },
+      {
+        "type": "notification.failed",
+        "domain": "notification",
+        "version": "1.0.0",
+        "schema": "schemas/notification-event.schema.json",
+        "description": "Triggered when a notification fails to send",
+        "producers": ["notification-service"],
+        "consumers": ["alert-service", "retry-service", "analytics-service"],
+        "retentionDays": 180
+      },
+      {
+        "type": "notification.read",
+        "domain": "notification",
+        "version": "1.0.0",
+        "schema": "schemas/notification-event.schema.json",
+        "description": "Triggered when a user reads a notification",
+        "producers": ["notification-service", "mobile-app", "web-app"],
+        "consumers": ["analytics-service", "engagement-service"],
+        "retentionDays": 90
+      }
+    ],
+    "domains": [
+      {
+        "name": "notification",
+        "description": "Events related to notification creation, delivery, and engagement",
+        "owner": "notification-team"
+      }
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ncf.example.com/schemas/base-event.schema.json",
+  "title": "Base Event Schema",
+  "description": "Base schema for all NCF events",
+  "type": "object",
+  "required": [
+    "eventType",
+    "version",
+    "timestamp",
+    "eventId",
+    "payload"
+  ],
+  "properties": {
+    "eventType": {
+      "type": "string",
+      "description": "Unique identifier for the event type",
+      "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$",
+      "examples": ["user.created", "notification.sent", "system.error"]
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version for backward compatibility",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["1.0.0", "2.1.0"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the event occurred"
+    },
+    "eventId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this event instance"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Event-specific data"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional context about the event",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "System or service that generated the event"
+        },
+        "correlationId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID for correlating related events"
+        },
+        "causationId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID of the event that caused this event"
+        },
+        "userId": {
+          "type": "string",
+          "description": "ID of the user who triggered the event"
+        }
+      }
+    }
+  }
+}
