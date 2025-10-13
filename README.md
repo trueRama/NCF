@@ -15,6 +15,7 @@ A professional event file repository system for the Ministry of Finance, allowin
 ## Features
 
 ### Admin Features
+
 - 🔐 Simple login (admin/admin)
 - 📤 Upload PDF and image files
 - 📝 Add descriptions to files
@@ -30,6 +31,7 @@ A professional event file repository system for the Ministry of Finance, allowin
   - View events history
 
 ### Client Features
+
 - 📱 QR code access
 - 👁️ View files in browser
 - ⬇️ Download files
@@ -73,7 +75,8 @@ NCF/
 
 ## Usage
 
-### For Administrators:
+### For Administrators
+
 1. Go to `http://localhost/NCF/admin/`
 2. Login with username: `admin`, password: `admin`
 3. Upload PDF or image files
@@ -85,18 +88,20 @@ NCF/
    - Create new events for different occasions
    - Reactivate previous events when needed
 
-### For Event Management:
+### For Event Management
+
 1. **Creating New Events:**
    - Use QR Manager to create new events
    - Each event gets a unique QR code
    - Previous events are automatically deactivated
-   
+
 2. **QR Code Distribution:**
    - Download high-quality PNG files
    - Print QR codes for posters/handouts
    - Share URLs directly
 
-### For Clients:
+### For Clients
+
 1. Scan the QR code displayed on the client page
 2. Browse available files for the current event
 3. View files directly in browser
@@ -121,32 +126,38 @@ NCF/
 
 ## Database Schema
 
-### Files Table:
+### Files Table
+
 - id, filename, original_name, file_type, file_size, upload_date, description
 
-### Events Table:
+### Events Table
+
 - id, event_name, event_code, qr_url, created_date, is_active
 
 ## Configuration
 
-### Database Settings (includes/config.php):
+### Database Settings (includes/config.php)
+
 - Host: localhost
 - Database: ncf_repository
 - Username: root
 - Password: (empty)
 
-### Admin Credentials:
+### Admin Credentials
+
 - Username: admin
 - Password: admin
 
 ## QR Code Features
 
-### Download Options:
+### Download Options
+
 - **PNG Format:** High-quality images for printing
 - **Print Function:** Direct browser printing with optimized layout
 - **URL Copying:** One-click URL copying to clipboard
 
-### Event Management:
+### Event Management
+
 - **Multiple Events:** Create unlimited events
 - **Event History:** View all past and current events
 - **Reactivation:** Easily switch between events

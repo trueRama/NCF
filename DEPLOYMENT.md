@@ -10,6 +10,7 @@ This guide covers how to deploy the NCF Repository to your FTP server using auto
 ## 🤖 Automated Deployment with GitHub Actions
 
 ### Prerequisites
+
 - GitHub repository with admin access
 - FTP server credentials
 - Production database setup
@@ -32,10 +33,12 @@ This guide covers how to deploy the NCF Repository to your FTP server using auto
 ### Step 2: Trigger Deployment
 
 **Automatic Deployment:**
+
 - Push to `main` or `master` branch
 - Create a pull request
 
 **Manual Deployment:**
+
 1. Go to **Actions** tab in your repository
 2. Select "Deploy NCF Repository to FTP Server"
 3. Click "Run workflow"
@@ -46,6 +49,7 @@ This guide covers how to deploy the NCF Repository to your FTP server using auto
 ### Windows Users
 
 1. **Run the deployment script:**
+
    ```cmd
    deploy.bat
    ```
@@ -58,16 +62,19 @@ This guide covers how to deploy the NCF Repository to your FTP server using auto
 ### Linux/Mac Users
 
 1. **Make script executable:**
+
    ```bash
    chmod +x deploy.sh
    ```
 
 2. **Run deployment script:**
+
    ```bash
    ./deploy.sh
    ```
 
 3. **Upload via FTP:**
+
    ```bash
    # Using lftp (recommended)
    lftp -u username,password ftp.yourdomain.com
@@ -77,12 +84,14 @@ This guide covers how to deploy the NCF Repository to your FTP server using auto
 ## 🗄️ Database Configuration
 
 ### Production Database Settings
+
 - **Host:** `localhost`
 - **Database:** `u895763689_ncf`
 - **Username:** `u895763689_ncf`
 - **Password:** `(Admin@2025)`
 
 ### Database Setup Steps
+
 1. Create database on your hosting panel
 2. Import database structure (tables will be auto-created)
 3. Verify database connection in `includes/config.php`
@@ -113,6 +122,7 @@ public_html/
 ## 🔐 Security Configuration
 
 ### File Permissions
+
 ```bash
 # Directories
 find . -type d -exec chmod 755 {} \;
@@ -128,6 +138,7 @@ chmod 600 includes/config.php
 ```
 
 ### .htaccess Security Features
+
 - PHP execution prevention in uploads
 - Sensitive file protection
 - Security headers
@@ -137,6 +148,7 @@ chmod 600 includes/config.php
 ## ✅ Post-Deployment Checklist
 
 ### Immediate Verification
+
 - [ ] Website loads correctly
 - [ ] Database connection working
 - [ ] Admin portal accessible (`/admin/`)
@@ -145,6 +157,7 @@ chmod 600 includes/config.php
 - [ ] Client interface responsive
 
 ### Security Verification
+
 - [ ] Upload directory protected
 - [ ] Config files not accessible
 - [ ] SSL certificate active
@@ -152,6 +165,7 @@ chmod 600 includes/config.php
 - [ ] File permissions correct
 
 ### Functionality Testing
+
 - [ ] Admin login (admin/admin)
 - [ ] File upload (PDF, images)
 - [ ] QR code generation
@@ -180,21 +194,25 @@ After successful deployment:
 ### Common Issues
 
 **Database Connection Error:**
+
 - Verify database credentials in `includes/config.php`
 - Ensure database exists on hosting server
 - Check database user permissions
 
 **File Upload Issues:**
+
 - Verify `uploads/` directory exists and is writable
 - Check PHP upload limits on server
 - Ensure `.htaccess` security rules are correct
 
 **QR Code Not Generating:**
+
 - Check internet connectivity on server
 - Verify QR API service availability
 - Check for firewall blocking external requests
 
 **404 Errors:**
+
 - Verify files uploaded to correct directory
 - Check `.htaccess` rewrite rules
 - Ensure web server supports URL rewriting
@@ -209,6 +227,7 @@ After successful deployment:
 ## 📞 Support
 
 For deployment issues related to:
+
 - **GitHub Actions:** Check workflow logs
 - **FTP Upload:** Verify server credentials
 - **Database:** Contact hosting provider
