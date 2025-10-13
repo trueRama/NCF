@@ -79,44 +79,6 @@ $currentUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
             font-size: 1rem;
         }
         
-        .qr-showcase {
-            background: var(--light-bg);
-            border-radius: 20px;
-            padding: 3rem 2rem;
-            margin: 3rem auto;
-            max-width: 600px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            text-align: center;
-            border: 1px solid var(--border-light);
-        }
-        
-        .qr-showcase::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-gold), var(--light-gold), var(--primary-gold));
-            border-radius: 20px 20px 0 0;
-        }
-        
-        .qr-showcase h3 {
-            color: var(--text-dark);
-            margin-bottom: 1rem;
-            font-size: 1.4rem;
-        }
-        
-        .qr-code-display {
-            display: inline-block;
-            padding: 2rem;
-            background: var(--light-bg);
-            border-radius: 16px;
-            box-shadow: 0 12px 40px var(--shadow-medium);
-            margin: 1.5rem 0;
-            border: 2px solid var(--border-gold);
-        }
-        
         .mobile-friendly {
             padding: 2rem;
             text-align: center;
@@ -137,13 +99,17 @@ $currentUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
                 font-size: 1.1rem;
             }
             
-            .qr-showcase {
-                margin: 2rem 1rem;
-                padding: 2rem 1rem;
-            }
-            
             .hero-content {
                 padding: 0 1rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .stat-item {
+                min-width: 200px;
             }
         }
     </style>
@@ -162,47 +128,29 @@ $currentUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
     </div>
     
     <div class="container">
-        <div class="qr-showcase fade-in">
-            <h3>📱 QR Code Access</h3>
-            <p style="margin-bottom: 2rem; color: var(--text-light);">
-                Scan this QR code with your mobile device for quick access to this repository
-            </p>
+        <div class="card">
+            <h2>📋 Available Files</h2>
             
-            <div class="qr-code-display">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=<?php echo urlencode($currentUrl); ?>" 
-                     alt="QR Code for Repository Access" 
-                     style="border-radius: 8px; max-width: 100%; height: auto;">
-            </div>
-            
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-number"><?php echo count($files); ?></div>
-                    <div class="stat-label">Total Files</div>
+            <div class="stats" style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                <div class="stat-item" style="text-align: center; padding: 1rem; background: var(--light-bg); border-radius: 12px; border-left: 4px solid var(--primary-gold); min-width: 120px;">
+                    <div class="stat-number" style="font-size: 2rem; font-weight: 700; color: var(--primary-gold); margin-bottom: 0.5rem;"><?php echo count($files); ?></div>
+                    <div class="stat-label" style="color: var(--text-light); font-size: 0.9rem;">Total Files</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number"><?php 
+                <div class="stat-item" style="text-align: center; padding: 1rem; background: var(--light-bg); border-radius: 12px; border-left: 4px solid var(--accent-gold); min-width: 120px;">
+                    <div class="stat-number" style="font-size: 2rem; font-weight: 700; color: var(--accent-gold); margin-bottom: 0.5rem;"><?php 
                         $pdfCount = 0;
                         foreach($files as $file) {
                             if(strtolower($file['file_type']) === 'pdf') $pdfCount++;
                         }
                         echo $pdfCount;
                     ?></div>
-                    <div class="stat-label">PDF Documents</div>
+                    <div class="stat-label" style="color: var(--text-light); font-size: 0.9rem;">PDF Documents</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number"><?php echo count($files) - $pdfCount; ?></div>
-                    <div class="stat-label">Images</div>
+                <div class="stat-item" style="text-align: center; padding: 1rem; background: var(--light-bg); border-radius: 12px; border-left: 4px solid var(--light-gold); min-width: 120px;">
+                    <div class="stat-number" style="font-size: 2rem; font-weight: 700; color: var(--light-gold); margin-bottom: 0.5rem;"><?php echo count($files) - $pdfCount; ?></div>
+                    <div class="stat-label" style="color: var(--text-light); font-size: 0.9rem;">Images</div>
                 </div>
             </div>
-            
-            <div class="mobile-friendly">
-                <h4>📲 Mobile Optimized</h4>
-                <p>This repository is fully optimized for mobile devices. All files can be viewed and downloaded on any device.</p>
-            </div>
-        </div>
-        
-        <div class="card">
-            <h2>📋 Available Files</h2>
             
             <?php if (empty($files)): ?>
                 <div style="text-align: center; padding: 4rem 2rem; color: var(--text-light);">
@@ -272,7 +220,7 @@ $currentUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
                 <?php echo htmlspecialchars($currentEvent['event_name']); ?>
             </p>
             <p style="font-size: 0.9rem; opacity: 0.7;">
-                Scan the QR code above for easy mobile access • © <?php echo date('Y'); ?> Republic of Uganda
+                Professional Event File Repository • © <?php echo date('Y'); ?> Republic of Uganda
             </p>
         </div>
     </footer>

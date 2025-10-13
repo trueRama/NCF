@@ -1,15 +1,15 @@
 <?php
 // Database configuration
 //production
-$host = 'localhost';
-$dbname = 'u895763689_ncf';
-$username = 'u895763689_ncf';
-$password = '(Admin@2025)';
-//development
 // $host = 'localhost';
-// $dbname = 'ncf_repository';
-// $username = 'root';
-// $password = '';
+// $dbname = 'u895763689_ncf';
+// $username = 'u895763689_ncf';
+// $password = '(Admin@2025)';
+//development
+$host = 'localhost';
+$dbname = 'ncf_repository';
+$username = 'root';
+$password = '';
 
 try {
     $pdo = new PDO( "mysql:host=$host;dbname=$dbname", $username, $password );
@@ -86,16 +86,27 @@ function createNewEvent($pdo, $eventName) {
     
     // Create new event code
     $eventCode = strtolower(str_replace([' ', '-', '_'], '', $eventName)) . '_' . time();
-    $baseUrl = "http://" . $_SERVER['HTTP_HOST'] . dirname(dirname($_SERVER['REQUEST_URI' ] ) ) . '/client/';
+    
+    // Construct proper URL
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+    $host = $_SERVER['HTTP_HOST'];
+    $baseDir = dirname(dirname($_SERVER['REQUEST_URI']));
+    $baseUrl = $protocol . $host . $baseDir . '/client/';
 
     // Insert new event
-    $stmt = $pdo->prepare( 'INSERT INTO events ( event_name, event_code, qr_url, is_active ) VALUES ( ?, ?, ?, 1 )' );
-    $stmt->execute( [ $eventName, $eventCode, $baseUrl ] );
+    $stmt = $pdo->prepare('INSERT INTO events (event_name, event_code, qr_url, is_active) VALUES (?, ?, ?, 1)');
+    $stmt->execute([$eventName, $eventCode, $baseUrl]);
 
     return $eventCode;
 }
 
-function generateQRCode( $url, $size = 300 ) {
-    return "https://api.qrserver.com/v1/create-qr-code/?size={$size}x{$size}&format=png&data=" . urlencode( $url );
+function generateQRCode($url, $size = 300) {
+    // Ensure URL is properly encoded
+    $encodedUrl = urlencode($url);
+    
+    // Use QR Server API with better parameters
+    $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size={$size}x{$size}&format=png&ecc=M&margin=1&data=" . $encodedUrl;
+    
+    return $qrUrl;
 }
 ?>
