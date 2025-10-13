@@ -177,10 +177,10 @@ chmod 600 includes/config.php
 
 After successful deployment:
 
-- **Homepage:** `https://yourdomain.com/`
-- **Admin Portal:** `https://yourdomain.com/admin/`
-- **Client Interface:** `https://yourdomain.com/client/`
-- **Setup Page:** `https://yourdomain.com/setup.php`
+- **Homepage:** `https://ncf.miichub.com/`
+- **Admin Portal:** `https://ncf.miichub.com/admin/`
+- **Client Interface:** `https://ncf.miichub.com/client/`
+- **Setup Page:** `https://ncf.miichub.com/setup.php`
 
 ## 🎯 Default Admin Credentials
 

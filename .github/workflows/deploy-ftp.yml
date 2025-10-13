@@ -106,7 +106,7 @@ jobs:
         protocol: ${{ secrets.FTP_PROTOCOL || 'ftp' }}
         port: ${{ secrets.FTP_PORT || 21 }}
         local-dir: ./deploy/
-        server-dir: ${{ secrets.FTP_SERVER_DIR || './' }}
+        server-dir: public_html/ncf/
         exclude: |
           **/.git*
           **/.git*/**
@@ -134,8 +134,9 @@ jobs:
         if [ "${{ job.status }}" == "success" ]; then
           echo "✅ Deployment successful!"
           echo "🌐 NCF Repository is now live on the FTP server"
-          echo "🔗 Admin Portal: https://your-domain.com/admin"
-          echo "📱 Client Interface: https://your-domain.com/client"
+          echo "🔗 Homepage: https://ncf.miichub.com/"
+          echo "🔗 Admin Portal: https://ncf.miichub.com/admin/"
+          echo "📱 Client Interface: https://ncf.miichub.com/client/"
         else
           echo "❌ Deployment failed!"
           echo "Please check the logs for details"
@@ -178,9 +179,9 @@ jobs:
         - [x] Assets deployed
         
         ## 🔗 Application URLs
-        - **Homepage:** https://your-domain.com/
-        - **Admin Portal:** https://your-domain.com/admin/
-        - **Client Interface:** https://your-domain.com/client/
+        - **Homepage:** https://ncf.miichub.com/
+        - **Admin Portal:** https://ncf.miichub.com/admin/
+        - **Client Interface:** https://ncf.miichub.com/client/
         
         ## 🏛️ Features Deployed
         - Professional event file management

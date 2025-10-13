@@ -92,13 +92,14 @@ echo 4. Test the application functionality
 echo.
 echo FTP Upload Steps:
 echo 1. Connect to your FTP server
-echo 2. Navigate to your website's public directory
-echo 3. Upload all files from the '%DEPLOY_DIR%' folder
+echo 2. Navigate to your website's public_html directory
+echo 3. Create or navigate to the 'ncf' folder
+echo 4. Upload all files from the '%DEPLOY_DIR%' folder to public_html/ncf/
 echo.
 echo Application URLs after deployment:
-echo - Homepage: https://your-domain.com/
-echo - Admin Portal: https://your-domain.com/admin/
-echo - Client Interface: https://your-domain.com/client/
+echo - Homepage: https://ncf.miichub.com/
+echo - Admin Portal: https://ncf.miichub.com/admin/
+echo - Client Interface: https://ncf.miichub.com/client/
 echo.
 echo Database Configuration:
 echo - Production DB: u895763689_ncf
