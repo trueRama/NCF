@@ -21,8 +21,11 @@ if (isset($_GET['logout'])) {
 if ($_POST && isset($_FILES['file'])) {
     $uploadDir = '../uploads/';
     $description = $_POST['description'] ?? '';
+    $eventId = $_POST['event_id'] ?? null;
     
-    if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
+    if (!$eventId) {
+        $error = "Please select an event for the file upload.";
+    } elseif ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
         $originalName = $_FILES['file']['name'];
         $fileSize = $_FILES['file']['size'];
         $fileTmpName = $_FILES['file']['tmp_name'];
@@ -34,9 +37,9 @@ if ($_POST && isset($_FILES['file'])) {
             $uploadPath = $uploadDir . $newFilename;
             
             if (move_uploaded_file($fileTmpName, $uploadPath)) {
-                // Save to database
-                $stmt = $pdo->prepare("INSERT INTO files (filename, original_name, file_type, file_size, description) VALUES (?, ?, ?, ?, ?)");
-                $stmt->execute([$newFilename, $originalName, $fileExtension, $fileSize, $description]);
+                // Save to database with event association
+                $stmt = $pdo->prepare("INSERT INTO files (event_id, filename, original_name, file_type, file_size, description) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$eventId, $newFilename, $originalName, $fileExtension, $fileSize, $description]);
                 
                 $success = "File uploaded successfully!";
             } else {
@@ -65,9 +68,27 @@ if (isset($_GET['delete'])) {
     }
 }
 
-// Get all files
-$stmt = $pdo->query("SELECT * FROM files ORDER BY upload_date DESC");
-$files = $stmt->fetchAll();
+// Get all active events for the dropdown
+$allActiveEvents = getAllActiveEvents($pdo);
+
+// Get selected event or default to first active event
+$selectedEventId = $_GET['event_id'] ?? ($_POST['event_id'] ?? null);
+if (!$selectedEventId && !empty($allActiveEvents)) {
+    $selectedEventId = $allActiveEvents[0]['id'];
+}
+
+// Get files for selected event
+$files = [];
+if ($selectedEventId) {
+    $files = getEventFiles($pdo, $selectedEventId);
+    
+    // Get selected event details
+    $stmt = $pdo->prepare("SELECT * FROM events WHERE id = ?");
+    $stmt->execute([$selectedEventId]);
+    $selectedEvent = $stmt->fetch(PDO::FETCH_ASSOC);
+} else {
+    $selectedEvent = null;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -89,6 +110,7 @@ $files = $stmt->fetchAll();
             </div>
             <div class="user-menu">
                 <a href="qr_manager.php">📱 QR Manager</a>
+                <a href="events_manager.php">🎯 Events Manager</a>
                 <a href="../client/" target="_blank">👁️ View Client</a>
                 <a href="?logout=1">🚪 Logout</a>
             </div>
@@ -132,6 +154,25 @@ $files = $stmt->fetchAll();
             </p>
             
             <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="event_id">🎯 Select Event:</label>
+                    <select id="event_id" name="event_id" required>
+                        <?php if (empty($allActiveEvents)): ?>
+                            <option value="">No active events - Create one in QR Manager</option>
+                        <?php else: ?>
+                            <option value="">Choose an event...</option>
+                            <?php foreach ($allActiveEvents as $event): ?>
+                                <option value="<?php echo $event['id']; ?>" <?php echo ($selectedEventId == $event['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($event['event_name']); ?> (<?php echo $event['event_code']; ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                    <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">
+                        Files will be uploaded to the selected event repository
+                    </small>
+                </div>
+                
                 <div class="form-group">
                     <label for="file">📎 Select File (PDF or Images only):</label>
                     <input type="file" id="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.gif" required>
@@ -182,7 +223,46 @@ $files = $stmt->fetchAll();
         </div>
         
         <div class="card">
-            <h2>� File Management (<?php echo count($files); ?> files)</h2>
+            <h2>🎯 Event Filter</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--text-light);">
+                Select an event to view and manage its files
+            </p>
+            
+            <form method="GET" style="display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 250px;">
+                    <label for="filter_event_id">🎯 Select Event:</label>
+                    <select id="filter_event_id" name="event_id" onchange="this.form.submit()">
+                        <option value="">All Events</option>
+                        <?php foreach ($allActiveEvents as $event): ?>
+                            <option value="<?php echo $event['id']; ?>" <?php echo ($selectedEventId == $event['id']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($event['event_name']); ?> (<?php echo $event['event_code']; ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-secondary">🔍 Filter</button>
+                </div>
+            </form>
+            
+            <?php if ($selectedEvent): ?>
+                <div class="event-info" style="margin-top: 1.5rem; padding: 1rem; background: var(--light-bg); border-radius: 8px; border-left: 4px solid var(--primary-gold);">
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--text-dark);">📊 Current Event: <?php echo htmlspecialchars($selectedEvent['event_name']); ?></h4>
+                    <p style="margin: 0.25rem 0; color: var(--text-light);"><strong>Code:</strong> <?php echo htmlspecialchars($selectedEvent['event_code']); ?></p>
+                    <p style="margin: 0.25rem 0; color: var(--text-light);"><strong>Created:</strong> <?php echo date('M j, Y', strtotime($selectedEvent['created_date'])); ?></p>
+                    <?php if ($selectedEvent['description']): ?>
+                        <p style="margin: 0.25rem 0; color: var(--text-light);"><strong>Description:</strong> <?php echo htmlspecialchars($selectedEvent['description']); ?></p>
+                    <?php endif; ?>
+                    <p style="margin: 0.5rem 0 0 0;">
+                        <a href="<?php echo $selectedEvent['qr_url']; ?>" target="_blank" class="btn btn-info btn-small">👁️ View Event</a>
+                        <a href="qr_manager.php" class="btn btn-warning btn-small">📱 Manage QR</a>
+                    </p>
+                </div>
+            <?php endif; ?>
+        </div>
+        
+        <div class="card">
+            <h2>📁 File Management<?php echo $selectedEvent ? ' - ' . htmlspecialchars($selectedEvent['event_name']) : ''; ?> (<?php echo count($files); ?> files)</h2>
             
             <?php if (empty($files)): ?>
                 <div style="text-align: center; padding: 3rem; color: var(--text-light);">

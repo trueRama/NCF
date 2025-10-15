@@ -22,20 +22,22 @@ try {
         $pdo->exec("CREATE DATABASE IF NOT EXISTS $dbname");
         $pdo->exec("USE $dbname");
         
-        // Create files table
+        // Create files table with event association
         $pdo->exec("
             CREATE TABLE IF NOT EXISTS files (
                 id INT AUTO_INCREMENT PRIMARY KEY,
+                event_id INT NOT NULL,
                 filename VARCHAR(255) NOT NULL,
                 original_name VARCHAR(255) NOT NULL,
                 file_type VARCHAR(10) NOT NULL,
                 file_size INT NOT NULL,
                 upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                description TEXT
+                description TEXT,
+                FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
             )
         ");
         
-        // Create events table for QR code management
+        // Create events table for multi-event management
         $pdo->exec("
             CREATE TABLE IF NOT EXISTS events (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -43,8 +45,17 @@ try {
                 event_code VARCHAR(50) UNIQUE NOT NULL,
                 qr_url VARCHAR(500) NOT NULL,
                 created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                is_active TINYINT(1) DEFAULT 1
+                is_active TINYINT(1) DEFAULT 1,
+                description TEXT,
+                created_by VARCHAR(100) DEFAULT 'admin'
             )
+        ");
+        
+        // Add event_id column to existing files table if it doesn't exist
+        $pdo->exec("
+            ALTER TABLE files 
+            ADD COLUMN IF NOT EXISTS event_id INT DEFAULT 1,
+            ADD FOREIGN KEY IF NOT EXISTS (event_id) REFERENCES events(id) ON DELETE CASCADE
         ");
         
         // Insert default event if none exists
@@ -80,33 +91,58 @@ function getCurrentEvent($pdo) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function createNewEvent($pdo, $eventName) {
-    // Deactivate all previous events
-    $pdo->exec("UPDATE events SET is_active = 0");
-    
+function getEventByCode($pdo, $eventCode) {
+    $stmt = $pdo->prepare("SELECT * FROM events WHERE event_code = ? AND is_active = 1");
+    $stmt->execute([$eventCode]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function getAllActiveEvents($pdo) {
+    $stmt = $pdo->query("SELECT * FROM events WHERE is_active = 1 ORDER BY created_date DESC");
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getEventFiles($pdo, $eventId) {
+    $stmt = $pdo->prepare("SELECT * FROM files WHERE event_id = ? ORDER BY upload_date DESC");
+    $stmt->execute([$eventId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function createNewEvent($pdo, $eventName, $description = '') {
     // Create new event code
     $eventCode = strtolower(str_replace([' ', '-', '_'], '', $eventName)) . '_' . time();
     
-    // Construct proper URL
+    // Construct proper URL with event code
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
     $host = $_SERVER['HTTP_HOST'];
     $baseDir = dirname(dirname($_SERVER['REQUEST_URI']));
-    $baseUrl = $protocol . $host . $baseDir . '/client/';
+    $baseUrl = $protocol . $host . $baseDir . '/client/?event=' . $eventCode;
 
-    // Insert new event
-    $stmt = $pdo->prepare('INSERT INTO events ( event_name, event_code, qr_url, is_active ) VALUES ( ?, ?, ?, 1 )' );
-    $stmt->execute( [ $eventName, $eventCode, $baseUrl ] );
+    // Insert new event (keep all events active - no deactivation)
+    $stmt = $pdo->prepare('INSERT INTO events (event_name, event_code, qr_url, description, is_active) VALUES (?, ?, ?, ?, 1)');
+    $stmt->execute([$eventName, $eventCode, $baseUrl, $description]);
 
     return $eventCode;
 }
 
-function generateQRCode( $url, $size = 300 ) {
-    // Ensure URL is properly encoded
-    $encodedUrl = urlencode( $url );
+function toggleEventStatus($pdo, $eventId, $status) {
+    $stmt = $pdo->prepare("UPDATE events SET is_active = ? WHERE id = ?");
+    return $stmt->execute([$status, $eventId]);
+}
 
+function deleteEvent($pdo, $eventId) {
+    // This will also delete associated files due to CASCADE
+    $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
+    return $stmt->execute([$eventId]);
+}
+
+function generateQRCode($url, $size = 300) {
+    // Ensure URL is properly encoded
+    $encodedUrl = urlencode($url);
+    
     // Use QR Server API with better parameters
     $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size={$size}x{$size}&format=png&ecc=M&margin=1&data=" . $encodedUrl;
-
+    
     return $qrUrl;
 }
 ?>

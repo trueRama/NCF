@@ -19,32 +19,33 @@ if ($_POST && isset($_POST['create_event'])) {
     }
 }
 
-// Get current active event
-$currentEvent = getCurrentEvent($pdo);
-if (!$currentEvent) {
-    // Create default event if none exists
-    createNewEvent($pdo, 'Default Event');
+// Get selected event or current active event
+$selectedEventId = $_GET['event_id'] ?? null;
+if ($selectedEventId) {
+    $stmt = $pdo->prepare("SELECT * FROM events WHERE id = ? AND is_active = 1");
+    $stmt->execute([$selectedEventId]);
+    $currentEvent = $stmt->fetch(PDO::FETCH_ASSOC);
+} else {
     $currentEvent = getCurrentEvent($pdo);
 }
 
-// Construct the proper client URL
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-$host = $_SERVER['HTTP_HOST'];
-$baseDir = dirname(dirname($_SERVER['REQUEST_URI']));
-$clientUrl = $protocol . $host . $baseDir . '/client/';
+if (!$currentEvent) {
+    // Create default event if none exists
+    createNewEvent($pdo, 'Default Event', 'Default repository for file sharing');
+    $currentEvent = getCurrentEvent($pdo);
+}
+
+// Use the event's stored QR URL (which includes the event code)
+$clientUrl = $currentEvent['qr_url'];
 
 // Generate QR code with proper size
 $qrCodeUrl = generateQRCode($clientUrl, 400);
 
-// Update the event's QR URL if it's different
-if ($currentEvent['qr_url'] !== $clientUrl) {
-    $stmt = $pdo->prepare("UPDATE events SET qr_url = ? WHERE id = ?");
-    $stmt->execute([$clientUrl, $currentEvent['id']]);
-    $currentEvent['qr_url'] = $clientUrl;
-}
+// Get all active events for selection
+$allActiveEvents = getAllActiveEvents($pdo);
 
 // Get all events for history
-$stmt = $pdo->query("SELECT * FROM events ORDER BY created_date DESC");
+$stmt = $pdo->query("SELECT *, (SELECT COUNT(*) FROM files WHERE event_id = events.id) as file_count FROM events ORDER BY created_date DESC");
 $allEvents = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -171,6 +172,7 @@ $allEvents = $stmt->fetchAll();
             </div>
             <div class="nav-menu">
                 <a href="dashboard.php">📋 Dashboard</a>
+                <a href="events_manager.php">🎯 Events Manager</a>
                 <a href="../client/" target="_blank">👁️ View Client</a>
                 <a href="?logout=1">🚪 Logout</a>
             </div>
@@ -187,7 +189,30 @@ $allEvents = $stmt->fetchAll();
         <?php endif; ?>
         
         <div class="card">
-            <h2>📱 Current Active Event</h2>
+            <h2>🎯 Select Event for QR Management</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--text-light);">
+                Choose an event to view and manage its QR code
+            </p>
+            
+            <form method="GET" style="display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 250px;">
+                    <label for="event_id">🎯 Select Event:</label>
+                    <select id="event_id" name="event_id" onchange="this.form.submit()">
+                        <?php foreach ($allActiveEvents as $event): ?>
+                            <option value="<?php echo $event['id']; ?>" <?php echo ($currentEvent['id'] == $event['id']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($event['event_name']); ?> (<?php echo $event['event_code']; ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-secondary">🔍 Select</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>📱 QR Code for: <?php echo htmlspecialchars($currentEvent['event_name']); ?></h2>
             
             <div class="event-info">
                 <div class="event-name">
@@ -239,30 +264,9 @@ $allEvents = $stmt->fetchAll();
         </div>
         
         <div class="card">
-            <h2>🆕 Create New Event</h2>
+            <h2>📝 All Events</h2>
             <p style="margin-bottom: 1.5rem; color: var(--text-light);">
-                Creating a new event will generate a fresh QR code and deactivate the current one. This is useful for different occasions or when you want to reset access.
-            </p>
-            
-            <form method="POST">
-                <div class="form-group">
-                    <label for="event_name">🎯 Event Name:</label>
-                    <input type="text" id="event_name" name="event_name" placeholder="e.g., Annual Conference 2025, Workshop Series, Product Launch" required>
-                    <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">
-                        Choose a descriptive name that identifies this specific event
-                    </small>
-                </div>
-                
-                <button type="submit" name="create_event" class="btn btn-primary" onclick="return confirm('⚠️ This will deactivate the current QR code and create a new one. All previous QR codes will stop working. Continue?')">
-                    🎯 Create New Event
-                </button>
-            </form>
-        </div>
-        
-        <div class="card">
-            <h2>📝 Events History</h2>
-            <p style="margin-bottom: 1.5rem; color: var(--text-light);">
-                View all events and reactivate previous ones if needed
+                Quick overview of all events. Use <a href="events_manager.php" style="color: var(--primary-gold);">Events Manager</a> to create new events or manage existing ones.
             </p>
             
             <div class="events-history">
@@ -284,19 +288,17 @@ $allEvents = $stmt->fetchAll();
                                     </div>
                                     <div style="color: var(--text-light); font-size: 0.9rem;">
                                         <strong>Code:</strong> <?php echo htmlspecialchars($event['event_code']); ?><br>
+                                        <strong>Files:</strong> <?php echo $event['file_count']; ?><br>
                                         <strong>Created:</strong> <?php echo date('M j, Y g:i A', strtotime($event['created_date'])); ?>
                                     </div>
                                 </div>
                                 <div>
-                                    <?php if (!$event['is_active']): ?>
-                                        <button onclick="reactivateEvent(<?php echo $event['id']; ?>)" class="btn btn-info btn-small">
-                                            🔄 Reactivate
-                                        </button>
-                                    <?php else: ?>
-                                        <span class="btn btn-success btn-small" style="cursor: default;">
-                                            ✅ Current
-                                        </span>
-                                    <?php endif; ?>
+                                    <a href="?event_id=<?php echo $event['id']; ?>" class="btn btn-info btn-small">
+                                        � View QR
+                                    </a>
+                                    <a href="events_manager.php" class="btn btn-warning btn-small">
+                                        ⚙️ Manage
+                                    </a>
                                 </div>
                             </div>
                         </div>

@@ -1,17 +1,32 @@
 <?php
 require_once '../includes/config.php';
 
-// Get current active event
-$currentEvent = getCurrentEvent($pdo);
-if (!$currentEvent) {
-    // Create default event if none exists
-    createNewEvent($pdo, 'Default Event');
+// Get event code from URL parameter
+$eventCode = $_GET['event'] ?? null;
+
+// Get current event
+if ($eventCode) {
+    $currentEvent = getEventByCode($pdo, $eventCode);
+    if (!$currentEvent) {
+        // Event not found, redirect to error or show message
+        $error = "Event not found or has been deactivated.";
+    }
+} else {
+    // No event specified, get the most recent active event
     $currentEvent = getCurrentEvent($pdo);
 }
 
-// Get all files
-$stmt = $pdo->query("SELECT * FROM files ORDER BY upload_date DESC");
-$files = $stmt->fetchAll();
+if (!$currentEvent && !isset($error)) {
+    // Create default event if none exists
+    createNewEvent($pdo, 'Default Event', 'Default repository for file sharing');
+    $currentEvent = getCurrentEvent($pdo);
+}
+
+// Get files for this specific event
+$files = [];
+if ($currentEvent) {
+    $files = getEventFiles($pdo, $currentEvent['id']);
+}
 
 // Get current URL for QR code
 $currentUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
@@ -122,35 +137,58 @@ $currentUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
                 NCF Repository
             </div>
             <div class="event-subtitle">Ministry of Finance, Planning and Economic Development</div>
-            <div class="event-subtitle"><?php echo htmlspecialchars($currentEvent['event_name']); ?></div>
-            <div class="access-info">Professional Event File Repository</div>
+            <?php if (isset($error)): ?>
+                <div class="event-subtitle" style="color: #ff6b6b;">⚠️ <?php echo htmlspecialchars($error); ?></div>
+                <div class="access-info">Please contact the administrator for a valid event link</div>
+            <?php elseif ($currentEvent): ?>
+                <div class="event-subtitle"><?php echo htmlspecialchars($currentEvent['event_name']); ?></div>
+                <div class="access-info">Professional Event File Repository</div>
+                <?php if ($currentEvent['description']): ?>
+                    <div class="access-info" style="font-size: 0.9rem; margin-top: 0.5rem;">
+                        <?php echo htmlspecialchars($currentEvent['description']); ?>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
         </div>
     </div>
     
     <div class="container">
-        <div class="card">
-            <h2>📋 Available Files</h2>
-            
-            <div class="stats" style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
-                <div class="stat-item" style="text-align: center; padding: 1rem; background: var(--light-bg); border-radius: 12px; border-left: 4px solid var(--primary-gold); min-width: 120px;">
-                    <div class="stat-number" style="font-size: 2rem; font-weight: 700; color: var(--primary-gold); margin-bottom: 0.5rem;"><?php echo count($files); ?></div>
-                    <div class="stat-label" style="color: var(--text-light); font-size: 0.9rem;">Total Files</div>
-                </div>
-                <div class="stat-item" style="text-align: center; padding: 1rem; background: var(--light-bg); border-radius: 12px; border-left: 4px solid var(--accent-gold); min-width: 120px;">
-                    <div class="stat-number" style="font-size: 2rem; font-weight: 700; color: var(--accent-gold); margin-bottom: 0.5rem;"><?php 
-                        $pdfCount = 0;
-                        foreach($files as $file) {
-                            if(strtolower($file['file_type']) === 'pdf') $pdfCount++;
-                        }
-                        echo $pdfCount;
-                    ?></div>
-                    <div class="stat-label" style="color: var(--text-light); font-size: 0.9rem;">PDF Documents</div>
-                </div>
-                <div class="stat-item" style="text-align: center; padding: 1rem; background: var(--light-bg); border-radius: 12px; border-left: 4px solid var(--light-gold); min-width: 120px;">
-                    <div class="stat-number" style="font-size: 2rem; font-weight: 700; color: var(--light-gold); margin-bottom: 0.5rem;"><?php echo count($files) - $pdfCount; ?></div>
-                    <div class="stat-label" style="color: var(--text-light); font-size: 0.9rem;">Images</div>
+        <?php if (isset($error)): ?>
+            <div class="card">
+                <h2>❌ Event Access Error</h2>
+                <div style="text-align: center; padding: 4rem 2rem; color: var(--text-light);">
+                    <div style="font-size: 5rem; margin-bottom: 1.5rem; opacity: 0.3;">🚫</div>
+                    <h3 style="color: var(--text-dark); margin-bottom: 1rem;">Event Not Found</h3>
+                    <p><?php echo htmlspecialchars($error); ?></p>
+                    <p style="margin-top: 1.5rem; font-size: 0.9rem;">
+                        Please verify the event link or contact the administrator for assistance.
+                    </p>
                 </div>
             </div>
+        <?php else: ?>
+            <div class="card">
+                <h2>📋 Available Files</h2>
+                
+                <div class="stats" style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                    <div class="stat-item" style="text-align: center; padding: 1rem; background: var(--light-bg); border-radius: 12px; border-left: 4px solid var(--primary-gold); min-width: 120px;">
+                        <div class="stat-number" style="font-size: 2rem; font-weight: 700; color: var(--primary-gold); margin-bottom: 0.5rem;"><?php echo count($files); ?></div>
+                        <div class="stat-label" style="color: var(--text-light); font-size: 0.9rem;">Total Files</div>
+                    </div>
+                    <div class="stat-item" style="text-align: center; padding: 1rem; background: var(--light-bg); border-radius: 12px; border-left: 4px solid var(--accent-gold); min-width: 120px;">
+                        <div class="stat-number" style="font-size: 2rem; font-weight: 700; color: var(--accent-gold); margin-bottom: 0.5rem;"><?php 
+                            $pdfCount = 0;
+                            foreach($files as $file) {
+                                if(strtolower($file['file_type']) === 'pdf') $pdfCount++;
+                            }
+                            echo $pdfCount;
+                        ?></div>
+                        <div class="stat-label" style="color: var(--text-light); font-size: 0.9rem;">PDF Documents</div>
+                    </div>
+                    <div class="stat-item" style="text-align: center; padding: 1rem; background: var(--light-bg); border-radius: 12px; border-left: 4px solid var(--light-gold); min-width: 120px;">
+                        <div class="stat-number" style="font-size: 2rem; font-weight: 700; color: var(--light-gold); margin-bottom: 0.5rem;"><?php echo count($files) - $pdfCount; ?></div>
+                        <div class="stat-label" style="color: var(--text-light); font-size: 0.9rem;">Images</div>
+                    </div>
+                </div>
             
             <?php if (empty($files)): ?>
                 <div style="text-align: center; padding: 4rem 2rem; color: var(--text-light);">
@@ -205,6 +243,7 @@ $currentUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
                 </div>
             <?php endif; ?>
         </div>
+        <?php endif; ?>
     </div>
     
     <footer style="background: var(--dark-bg); color: rgba(255,255,255,0.8); text-align: center; padding: 2rem; margin-top: 3rem;">
@@ -216,9 +255,11 @@ $currentUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
             <p style="margin-bottom: 1rem;">
                 <strong>Ministry of Finance, Planning and Economic Development</strong>
             </p>
-            <p style="margin-bottom: 1rem;">
-                <?php echo htmlspecialchars($currentEvent['event_name']); ?>
-            </p>
+            <?php if ($currentEvent): ?>
+                <p style="margin-bottom: 1rem;">
+                    <?php echo htmlspecialchars($currentEvent['event_name']); ?>
+                </p>
+            <?php endif; ?>
             <p style="font-size: 0.9rem; opacity: 0.7;">
                 Professional Event File Repository • © <?php echo date('Y'); ?> Republic of Uganda
             </p>
