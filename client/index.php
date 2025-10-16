@@ -167,7 +167,7 @@ $currentUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
             </div>
         <?php else: ?>
             <div class="card">
-                <h2>📋 Available Files</h2>
+                <!-- <h2>📋 Available Files</h2>
                 
                 <div class="stats" style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
                     <div class="stat-item" style="text-align: center; padding: 1rem; background: var(--light-bg); border-radius: 12px; border-left: 4px solid var(--primary-gold); min-width: 120px;">
@@ -188,7 +188,7 @@ $currentUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
                         <div class="stat-number" style="font-size: 2rem; font-weight: 700; color: var(--light-gold); margin-bottom: 0.5rem;"><?php echo count($files) - $pdfCount; ?></div>
                         <div class="stat-label" style="color: var(--text-light); font-size: 0.9rem;">Images</div>
                     </div>
-                </div>
+                </div> -->
             
             <?php if (empty($files)): ?>
                 <div style="text-align: center; padding: 4rem 2rem; color: var(--text-light);">
