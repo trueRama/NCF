@@ -1,0 +1,39 @@
+# Render blueprint — deploy as a static site.
+#
+# The app is client-rendered (`ssr: false` in nuxt.config.ts), so `nuxt generate`
+# emits a plain bundle in .output/public with no Node process to keep running.
+# The rewrite hands every deep link back to the SPA shell so /programme and
+# friends resolve on a cold visit or a refresh.
+services:
+  - type: web
+    name: ncf17-web
+    runtime: static
+    buildCommand: npm install --no-audit --no-fund && npm run generate
+    staticPublishPath: .output/public
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Where the registration form posts. Leave unset and the form falls back
+      # to a pre-filled email to the Private Sector Development Unit.
+      - key: NUXT_PUBLIC_REGISTRATION_ENDPOINT
+        sync: false
+      - key: NUXT_PUBLIC_REGISTRATION_EMAIL
+        value: psdu@finance.go.ug
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /_nuxt/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

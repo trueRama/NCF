@@ -1,209 +1,227 @@
-# 📁 NCF Repository - Event File Management System
+# 17th National Competitiveness Forum — event microsite
 
-**Ministry of Finance, Planning and Economic Development**  
-**Republic of Uganda** 🇺🇬
+A standalone microsite for the **17th National Competitiveness Forum**,
+*“From Funds to Firms: Turning GoU Wealth Creation Initiatives into Competitive
+Enterprises for Uganda’s US$500 Billion Economy”* — Kampala Serena Hotel,
+25 September 2026.
 
-A professional event file repository system for the Ministry of Finance, allowing administrators to upload files and clients to access them via QR codes with modern corporate branding.
+Convened by the Private Sector Development Unit, Ministry of Finance, Planning
+and Economic Development.
 
-## 🏛️ Official Information
+## Stack
 
-**Organization:** Ministry of Finance, Planning and Economic Development  
-**Country:** Republic of Uganda 🇺🇬  
-**Purpose:** Professional event file repository system  
-**Version:** 1.0.0
+Built from the `nuxt-shad-pb-boilerplate` starter (git history removed), wearing
+the Doing Business Portal theme.
 
-## Features
+- **Nuxt 4** (Vue 3), file-based routing
+- **Client-rendered only** — `ssr: false`; `nuxt generate` emits a static bundle
+- **Tailwind CSS v4** with the Portal's oklch design tokens (`app/assets/css/tailwind.css`)
+- **shadcn-vue** (new-york), lucide icons, vue-sonner
 
-### Admin Features
+## Shape of the project
 
-- 🔐 Simple login (admin/admin)
-- 📤 Upload PDF and image files
-- 📝 Add descriptions to files
-- 📊 View file statistics
-- 🗑️ Delete files
-- 📋 Manage all uploaded files
-- 📱 **QR Code Management**
-  - Generate QR codes for events
-  - Download QR codes as PNG files
-  - Print QR codes for sharing
-  - Create new events with fresh QR codes
-  - Reactivate previous events
-  - View events history
+Two halves, one deployment, one domain:
 
-### Client Features
+| Path | What it is |
+| --- | --- |
+| `app/`, `public/` | The **landing page** — Nuxt 4, client-rendered, built to a static bundle |
+| `repository/` | The **file repository** — PHP 8 + MySQL, with its own admin portal |
 
-- 📱 QR code access
-- 👁️ View files in browser
-- ⬇️ Download files
-- 📊 Repository statistics
-- 📱 Mobile-friendly interface
-- 🎯 Dynamic event display
+The static bundle is published at the web root; the PHP app sits beneath it at
+`/repository`. Because both are served from the same origin, the landing page
+links straight into the repository with plain relative URLs — no CORS, no API.
 
-## Installation
+## Commands
 
-1. **Prerequisites:**
-   - XAMPP installed and running
-   - Apache and MySQL services started
-
-2. **Setup:**
-   - Files are already in: `c:\xampp\htdocs\NCF`
-   - Open browser and go to: `http://localhost/NCF/setup.php`
-   - This will create the database and required tables
-
-3. **Access Points:**
-   - **Home:** `http://localhost/NCF/`
-   - **Admin:** `http://localhost/NCF/admin/` (login: admin/admin)
-   - **QR Manager:** `http://localhost/NCF/admin/qr_manager.php`
-   - **Client:** `http://localhost/NCF/client/`
-
-## File Structure
-
-```
-NCF/
-├── index.php              # Home page
-├── setup.php             # Database setup script
-├── admin/
-│   ├── index.php          # Admin login
-│   ├── dashboard.php      # Admin dashboard
-│   └── qr_manager.php     # QR code management
-├── client/
-│   └── index.php          # Client interface with QR code
-├── includes/
-│   └── config.php         # Database configuration
-└── uploads/               # File storage directory
+```bash
+npm install
+npm run dev        # landing page  → http://localhost:3000
+npm run generate   # static bundle → .output/public
 ```
 
-## Usage
+The PHP half needs Apache + MySQL (XAMPP locally):
 
-### For Administrators
+```bash
+# once, to create the database and apply the schema
+php repository/setup.php
 
-1. Go to `http://localhost/NCF/admin/`
-2. Login with username: `admin`, password: `admin`
-3. Upload PDF or image files
-4. **Manage QR Codes:**
-   - Go to "QR Manager" from the dashboard
-   - Download QR code as PNG file
-   - Print QR code for physical distribution
-   - Copy URL to clipboard
-   - Create new events for different occasions
-   - Reactivate previous events when needed
+# after pulling a schema change into an existing install
+# open http://localhost/ncf17/repository/migrate.php
+```
 
-### For Event Management
+To preview the two halves exactly as they deploy, build and serve them together:
 
-1. **Creating New Events:**
-   - Use QR Manager to create new events
-   - Each event gets a unique QR code
-   - Previous events are automatically deactivated
+```bash
+npm run generate
+mkdir preview && cp -r .output/public/. preview/ && cp -r repository preview/repository
+php -S 127.0.0.1:8082 -t preview
+```
 
-2. **QR Code Distribution:**
-   - Download high-quality PNG files
-   - Print QR codes for posters/handouts
-   - Share URLs directly
+## Structure
 
-### For Clients
+A **single page** with five anchored sections, mirroring the shape of the ABCD
+portal launch page it replaces but wearing the Portal's own theme:
 
-1. Scan the QR code displayed on the client page
-2. Browse available files for the current event
-3. View files directly in browser
-4. Download files to device
+| Section | Contents |
+| --- | --- |
+| `#home` | Hero over a Forum photograph, live countdown, date/venue/convener, Access Portal CTA |
+| — | Headline numbers behind the theme (PDM investment, parishes, households, exports) |
+| `#about` | Why the Forum is about turning funds into firms, plus the five objectives |
+| `#agenda` | Annex 1 as a Time / Activity / Session chair table |
+| `#speakers` | All twelve speakers and session chairs |
+| `#resources` | The three repositories — Event Resources, Reports, Commodity Profiles |
 
-## Security Features
+The header nav scroll-spies the section in view; `/anything-else` renders a 404
+that points back to the page.
 
-- File type validation (only PDF and images allowed)
-- Secure uploads directory with .htaccess protection
-- Admin authentication required for uploads
-- Unique file naming to prevent conflicts
-- Event-based access control
+## Content
 
-## Technical Details
+Every fact on the site lives in **`app/data/forum.ts`** — the event, the
+programme, speakers, past editions, resources. Nothing is fetched at runtime.
 
-- **Backend:** PHP with PDO for database operations
-- **Database:** MySQL with two main tables (files, events)
-- **Frontend:** Responsive HTML/CSS with JavaScript
-- **QR Codes:** Generated using QR Server API (300x300 to 400x400 px)
-- **File Types:** PDF, JPG, JPEG, PNG, GIF
-- **Print Support:** CSS print styles for QR codes
+The module also holds sourced content the one-pager does not currently render
+(`BACKGROUND`, `CHALLENGES`, `SOLUTION`, `EXPECTED_OUTCOMES`, `ARCHIVE`,
+`LAST_FORUM_PRIORITIES`, `PARTICIPATING`, `GALLERY`). It is kept for when a
+section needs it rather than being re-extracted from the concept note.
 
-## Database Schema
+Sources:
 
-### Files Table
+- The **draft** 17th NCF concept note of 22 July 2026 (theme, background,
+  justification, objectives, Annex 1 programme, Annex II archive).
+- The Doing Business Portal's own forum archive and the 16th NCF outcome matrix
+  (the nine priorities, the 18 tracked actions, the Forum photography).
 
-- id, filename, original_name, file_type, file_size, upload_date, description
+### Placeholder data
 
-### Events Table
+The concept note names some presenters only by office. Those entries carry
+`provisional: true` in `SPEAKERS` and render with a **“To be confirmed”** badge
+rather than passing as settled:
 
-- id, event_name, event_code, qr_url, created_date, is_active
+| Placeholder | What the concept note actually says |
+| --- | --- |
+| Hon. Matia Kasaija | “Key note address by Hon. MFPED” |
+| Hon. Amos Lugolobi | “Closing Remarks by MSFPED – Planning” |
+| Ms Dianna Nanono | “Welcoming Remarks by H/PSDU” |
+| Ms Sarah Nabbanja | “The presenter – DCO/Mubende District” |
+| Mr David Ssemwanga | “Commissioner, Local Economic Growth Support, MoLG” |
+| Mr Anil Sharma | “Best practices from India” |
+| Ms Grace Muhumuza | “Presenter: Stanbic Bank” |
+
+Replace the names in `app/data/forum.ts` and drop `provisional: true` as PSDU
+confirms each one.
+
+## The three repositories
+
+`#resources` on the landing page shows three cards. Each one is a repository of
+files held by the PHP app and administered from `/repository/admin/`:
+
+| Card | `files.category` | Download | View |
+| --- | --- | --- | --- |
+| Event Resources | `event_resources` | `/repository/download_all.php?category=event_resources` | `/repository/client/?category=event_resources` |
+| Reports | `reports` | `…?category=reports` | `…?category=reports` |
+| Commodity Profiles | `commodity_profiles` | `…?category=commodity_profiles` | `…?category=commodity_profiles` |
+
+**Download** streams every file in that repository as a single zip, built per
+request so it always reflects the latest uploads. **View** opens the browsable
+listing, where files can be taken one at a time.
+
+The card definitions live in `RESOURCES` in `app/data/forum.ts`; the `category`
+values there must match the `files.category` enum, which is declared once in
+`repository/includes/schema.php` and used by both the schema and the UI.
+
+### Database
+
+`files` carries two independent axes:
+
+- `event_id` — which Forum the file belongs to (the existing multi-event/QR system)
+- `category` — which of the three repositories it appears in
+
+Linking without `?event=` shows a category across every event, which is what the
+landing page cards do. Adding `&event=<code>` scopes it to one Forum, which is
+what the QR codes do. `repository/migrate.php` adds `category` to an existing
+install and defaults every current row to `event_resources`.
 
 ## Configuration
 
-### Database Settings (includes/config.php)
+Credentials never live in source. `repository/includes/config.php` reads them
+from `repository/includes/config.local.php` (gitignored) or from environment
+variables.
 
-- Host: localhost
-- Database: ncf_repository
-- Username: root
-- Password: (empty)
+**The environment is detected automatically.** `localhost`, `127.0.0.1`,
+`192.168.*`, `*.test`, `*.local` and the CLI are treated as `local`; any other
+hostname is `production`. An unknown host falls to `production` deliberately —
+it fails closed rather than exposing errors on a live site. Set `APP_ENV` to
+decide explicitly.
 
-### Admin Credentials
+So one config file can serve both:
 
-- Username: admin
-- Password: admin
+```php
+// repository/includes/config.local.php
+return [
+    'shared'     => ['admin_username' => 'admin', 'admin_password_hash' => '...'],
+    'local'      => ['db_name' => 'ncf_repository', 'db_user' => 'root', 'db_pass' => ''],
+    'production' => ['db_name' => '...', 'db_user' => '...', 'db_pass' => '...'],
+];
+```
 
-## QR Code Features
+A flat array (no environment keys) still works and applies everywhere.
+Environment variables — `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`,
+`ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, `LANDING_PAGE_URL` — override the file.
 
-### Download Options
+Start from the example:
 
-- **PNG Format:** High-quality images for printing
-- **Print Function:** Direct browser printing with optimized layout
-- **URL Copying:** One-click URL copying to clipboard
+```bash
+cp repository/includes/config.local.example.php repository/includes/config.local.php
+```
 
-### Event Management
+Set `admin_password_hash` before going live — until you do, the admin portal
+still accepts the default `admin`/`admin` and shows a warning banner:
 
-- **Multiple Events:** Create unlimited events
-- **Event History:** View all past and current events
-- **Reactivation:** Easily switch between events
-- **Unique Codes:** Each event gets a unique identifier
+```bash
+php -r "echo password_hash('your-password', PASSWORD_DEFAULT);"
+```
 
-## Troubleshooting
+In `production` the app also stops displaying PHP errors and stops
+auto-creating the database; a connection failure returns a plain message and
+logs the detail instead.
 
-1. **Database Connection Issues:**
-   - Ensure MySQL is running in XAMPP
-   - Run setup.php to create database and events table
+## Deployment
 
-2. **File Upload Issues:**
-   - Check uploads directory permissions
-   - Verify file types are allowed
-   - Check PHP upload limits in php.ini
+One package, one upload: the static bundle at the web root, `repository/`
+beneath it.
 
-3. **QR Code Not Loading:**
-   - Check internet connection (uses external QR API)
-   - Verify the client URL is accessible
+```bash
+npm run package      # generate + assemble + validate -> deploy/
+```
 
-4. **QR Download Issues:**
-   - Ensure JavaScript is enabled
-   - Check browser download permissions
+`scripts/package.mjs` is the single source of truth — CI runs the same script,
+so a local package and a deployed one are identical. It refuses to build
+without complete credentials, rejects an `ADMIN_PASSWORD_HASH` that is not
+bcrypt, and checks the landing page really links into the repository.
 
-## Customization
+`.github/workflows/deploy-ftp.yml` runs it on push to `main`/`master`, uploads
+`deploy/` over FTPS, then health-checks the live URLs. Run it manually with the
+**dry_run** input to build and validate without uploading.
 
-- Change admin credentials in `admin/index.php`
-- Modify allowed file types in `includes/config.php`
-- Update QR code size in `generateQRCode()` function
-- Customize styling by modifying CSS in respective files
-- Add more event fields in database schema
+| Secret | |
+| --- | --- |
+| `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD` | FTP account |
+| `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS` | production database |
+| `ADMIN_PASSWORD_HASH` | bcrypt hash for the admin portal |
 
-## New in v2.0
+Optional secrets: `FTP_SERVER_DIR` (default `public_html/`), `FTP_PROTOCOL`
+(default `ftps`), `FTP_PORT`, `ADMIN_USERNAME`,
+`NUXT_PUBLIC_REGISTRATION_ENDPOINT`.
 
-- ✅ QR Code download functionality
-- ✅ Print-optimized QR codes
-- ✅ Event management system
-- ✅ Multiple events support
-- ✅ Event history and reactivation
-- ✅ Dynamic event display
-- ✅ Enhanced admin interface
+Optional repository **variables**: `SITE_URL` (enables the post-deploy health
+check — set it to `https://ncf.miichub.com`) and `LANDING_PAGE_URL`.
 
-## Support
+The deployed layout puts the Forum landing page at `https://ncf.miichub.com/`
+and the repository beneath it at `https://ncf.miichub.com/repository/`. Because
+they share an origin, the repository's logo links home with a plain relative
+hop and needs no configuration in production.
 
-For any issues or customizations, refer to the code comments or modify the configuration files as needed.
+Delegate uploads live only on the server: `repository/uploads/**` is excluded
+from the sync, so a deploy never deletes them.
 
----
-
-**NCF Repository v2.0** - Simple, secure, and user-friendly file management for events with advanced QR code management.
+After a deploy that changes the schema, open `/repository/migrate.php` once.

@@ -1,0 +1,212 @@
+
+@import "./fonts.css";
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Code Pro Black — self-hosted display face for headings, from app/assets/fonts.
+   The family ships a single black cut, so it is declared across the whole weight
+   range: a heading marked font-bold reuses this file instead of having the
+   browser synthesise a heavier weight on top of an already-black face. */
+@font-face {
+    font-family: 'Code Pro Black';
+    src: url('../fonts/Code Pro Black.woff') format('woff'),
+         url('../fonts/Code Pro Black.otf') format('opentype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@theme inline {
+    --font-sans: ui-sans-serif, system-ui, sans-serif;
+    --font-heading: 'Code Pro Black', var(--font-sans);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary-ink: var(--primary-ink);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+    /* Light only. The site never applies a `.dark` class, and color-scheme
+       keeps form controls and scrollbars light on a dark-themed OS. */
+    color-scheme: light;
+
+    /*--radius: 0.625rem;*/
+    --radius: 0rem;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    /* Amber has two jobs and they need two values.
+
+       `--primary` is the FILL: buttons, the progress bar, the active-nav rule,
+       the edition chip, the monogram tiles. Black on it measures 10.40:1 and it
+       reads 9.81:1 against the dark hero, so as a surface it is already sound.
+
+       As TEXT on a light ground the same value is 2.02:1 — less than half of
+       AA. `--primary-ink` is the amber that carries meaning on white: the
+       agenda time column, resource links, the meta icons. It holds 4.89:1 on
+       the worst surface we actually paint (the amber-tinted draft notice) and
+       5.25:1 on plain white. Same hue family, same recognition, legible. */
+    --primary: oklch(0.787 0.172 69.121);
+    --primary-foreground: oklch(0 0 0);
+    --primary-ink: oklch(0.54 0.132 62);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    /* Was 0.556 — 4.73:1 on white, which cleared AA by 0.23 and then failed
+       outright at 4.44:1 on the tinted notice. 0.53 holds 4.95:1 on the worst
+       surface, so the whole body copy has headroom instead of a coin flip. */
+    --muted-foreground: oklch(0.53 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    /* A focus ring is a control indicator: 3:1 minimum, and it may as well be
+       the brand doing the work. Neutral 0.708 measured 2.59:1 and failed. */
+    --ring: oklch(0.62 0.155 66);
+    --chart-1: oklch(0.646 0.222 41.116);
+    --chart-2: oklch(0.6 0.118 184.704);
+    --chart-3: oklch(0.398 0.07 227.392);
+    --chart-4: oklch(0.828 0.189 84.429);
+    --chart-5: oklch(0.769 0.188 70.08);
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+
+    /* Data-visualisation palette. Categorical, assigned in fixed order and never
+       cycled: colour follows the entity, not its rank. Validated for adjacent-pair
+       CVD separation and 3:1 contrast against the light surface. The dark block
+       below carries its own steps rather than flipping these. */
+    --viz-1: #b45309;
+    --viz-2: #0891b2;
+    --viz-3: #4d7c0f;
+    --viz-4: #7e22ce;
+    --viz-5: #be123c;
+    /* Steps 6-8 extend the same palette for figures that need more than five
+       categories (share breakdowns). Step 8 is deliberately neutral: it is the
+       one reserved for a "everything else" remainder, which should never read
+       as loudly as a named category. */
+    --viz-6: #1d4ed8;
+    --viz-7: #0f766e;
+    --viz-8: #475569;
+    --viz-positive: #4d7c0f;
+    --viz-negative: #be123c;
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground font-sans;
+    }
+
+    span {
+        font-family: var(--font-sans);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Code Pro Black', var(--font-sans);
+    }
+
+    /* The surfaces we did not draw still carry the design. */
+    ::selection {
+        background-color: color-mix(in oklab, var(--primary) 32%, transparent);
+        color: var(--foreground);
+    }
+    :root {
+        caret-color: var(--primary-ink);
+        scrollbar-color: color-mix(in oklab, var(--primary-ink) 45%, var(--border)) var(--background);
+    }
+    ::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+    }
+    ::-webkit-scrollbar-track {
+        background: var(--background);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: color-mix(in oklab, var(--primary-ink) 45%, var(--border));
+        border: 3px solid var(--background);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-ink);
+    }
+}
+/* Page transitions ------------------------------------------------------- */
+.page-enter-active,
+.page-leave-active {
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+.page-enter-from {
+    opacity: 0;
+    transform: translateY(6px);
+}
+.page-leave-to {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-enter-active,
+    .page-leave-active {
+        transition: none;
+    }
+    .page-enter-from,
+    .page-leave-to {
+        transform: none;
+    }
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+    }
+}

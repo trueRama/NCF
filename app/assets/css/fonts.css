@@ -1,0 +1,147 @@
+/* MontBlanc — the site's typeface. Files live in app/assets/mont-blank and are
+   bundled by Vite, so the paths below are resolved at build time.
+   Note: these are the Trial cuts; swap in licensed files before production. */
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-Thin.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-Thin.woff') format('woff');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-ThinItalic.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-ThinItalic.woff') format('woff');
+    font-weight: 100;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-ExtraLight.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-ExtraLight.woff') format('woff');
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-ExtraLightItalic.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-ExtraLightItalic.woff') format('woff');
+    font-weight: 200;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-Light.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-Light.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-LightItalic.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-LightItalic.woff') format('woff');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-Regular.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-RegularItalic.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-RegularItalic.woff') format('woff');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-SemiBold.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-SemiBold.woff') format('woff');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-SemiBoldItalic.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-SemiBoldItalic.woff') format('woff');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-Bold.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-Bold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-BoldItalic.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-BoldItalic.woff') format('woff');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-ExtraBold.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-ExtraBold.woff') format('woff');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-ExtraBoldItalic.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-ExtraBoldItalic.woff') format('woff');
+    font-weight: 800;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-Black.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-Black.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MontBlanc';
+    src: url('../mont-blank/MontBlanc-Trial-BlackItalic.woff2') format('woff2'),
+         url('../mont-blank/MontBlanc-Trial-BlackItalic.woff') format('woff');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}

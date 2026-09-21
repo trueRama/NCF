@@ -1,0 +1,13 @@
+# Credentials and runtime state — never commit these.
+includes/config.local.php
+.env
+.env.*
+!.env.example
+
+# Delegate uploads are runtime data, not source.
+uploads/*
+!uploads/.gitkeep
+!uploads/.htaccess
+
+# Build artefacts
+*.zip
